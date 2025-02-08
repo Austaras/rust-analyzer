@@ -958,3 +958,25 @@ fn f() {
     "#,
     );
 }
+
+#[test]
+fn coerce_nested_unsized_struct() {
+    check_types(
+        r#"
+//- minicore: fn, coerce_unsized, dispatch_from_dyn, sized
+use core::marker::Unsize;
+
+struct Foo<T: ?Sized>(T);
+impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Foo<U>> for Foo<T> {}
+
+fn foo(_: &dyn Unsize<Foo<[isize]>>) {
+}
+
+fn test() {
+    let a = [1,2,3];
+           //^ isize
+    foo(&Foo(a));
+}
+"#,
+    )
+}

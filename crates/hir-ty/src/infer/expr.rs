@@ -2096,6 +2096,7 @@ impl InferenceContext<'_> {
                 if self.coerce(Some(arg), &ty, &coercion_target, coerce_never).is_err()
                     && !arg_count_mismatch
                 {
+                    println!("err");
                     self.result.type_mismatches.insert(
                         arg.into(),
                         TypeMismatch { expected: coercion_target, actual: ty.clone() },

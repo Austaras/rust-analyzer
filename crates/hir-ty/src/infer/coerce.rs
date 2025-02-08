@@ -315,6 +315,7 @@ impl InferenceTable<'_> {
 
         // Consider coercing the subtype to a DST
         if let Ok(ret) = self.try_coerce_unsized(&from_ty, to_ty) {
+            println!("unsized");
             return Ok(ret);
         }
 
@@ -455,6 +456,7 @@ impl InferenceTable<'_> {
             // from `&mut T` to `&U`.
             let lt = to_lt; // FIXME: Involve rustc LUB and SUB flag checks
             let derefd_from_ty = TyKind::Ref(to_mt, lt.clone(), referent_ty).intern(Interner);
+            println!("222 {:#?}", derefd_from_ty);
             match autoderef.table.try_unify(&derefd_from_ty, to_ty) {
                 Ok(result) => {
                     found = Some(result.map(|()| derefd_from_ty));
@@ -616,6 +618,7 @@ impl InferenceTable<'_> {
     ///
     /// See: <https://doc.rust-lang.org/nightly/std/marker/trait.CoerceUnsized.html>
     fn try_coerce_unsized(&mut self, from_ty: &Ty, to_ty: &Ty) -> CoerceResult {
+        println!("unsize {:#?} {:#?}", from_ty, to_ty);
         // These 'if' statements require some explanation.
         // The `CoerceUnsized` trait is special - it is only
         // possible to write `impl CoerceUnsized<B> for A` where
@@ -693,6 +696,7 @@ impl InferenceTable<'_> {
             InEnvironment::new(&self.trait_env.env, coerce_unsized_tref.cast(Interner));
 
         let canonicalized = self.canonicalize_with_free_vars(goal);
+        println!("{:#?}", canonicalized);
 
         // FIXME: rustc's coerce_unsized is more specialized -- it only tries to
         // solve `CoerceUnsized` and `Unsize` goals at this point and leaves the
@@ -701,7 +705,11 @@ impl InferenceTable<'_> {
         let solution = self
             .db
             .trait_solve(krate, self.trait_env.block, canonicalized.value.clone().cast(Interner))
-            .ok_or(TypeError)?;
+            .ok_or(TypeError);
+
+        println!("{:#?}", solution);
+
+        let solution = solution?;
 
         match solution {
             Solution::Unique(v) => {

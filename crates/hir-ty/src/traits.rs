@@ -142,6 +142,7 @@ pub(crate) fn trait_solve_query(
 
     // We currently don't deal with universes (I think / hope they're not yet
     // relevant for our use cases?)
+    println!("here");
     let u_canonical = chalk_ir::UCanonical { canonical: goal, universes: 1 };
     solve(db, krate, block, &u_canonical)
 }
